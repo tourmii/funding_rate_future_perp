@@ -1,0 +1,4 @@
+vertex-protocol==3.3.0
+selenium==4.31.0
+python-dotenv==1.1.0
+pymongo==4.12.0

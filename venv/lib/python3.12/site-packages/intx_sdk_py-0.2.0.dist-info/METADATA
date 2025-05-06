@@ -1,0 +1,6 @@
+Metadata-Version: 2.2
+Name: intx-sdk-py
+Version: 0.2.0
+License-File: LICENSE
+Requires-Dist: requests
+Dynamic: requires-dist
