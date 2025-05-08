@@ -16,11 +16,10 @@ class BinanceFundingRateFetcher(SchedulerJob):
         }
         self.base_url = "https://fapi.binance.com/fapi/v1/fundingRate"
 
-    def get_funding_rate_history(self, symbol, end_time, limit=1000):
+    def get_funding_rate_history(self, symbol, limit=1000):
         params = {
             "symbol": symbol,
             "limit": limit,
-            "endTime": end_time
         }
         response = requests.get(self.base_url, params=params)
         response.raise_for_status()
@@ -29,15 +28,13 @@ class BinanceFundingRateFetcher(SchedulerJob):
     def fetch_data(self):
         for binance_symbol, mapped_symbol in self.product_mapping.items():
             print(f"Fetching funding rate for {binance_symbol}")
-            end_time = int(time.time() * 1000)  # current time in ms
             total_processed = 0
 
             while True:
                 try:
                     funding_data = self.get_funding_rate_history(
                         symbol=binance_symbol,
-                        end_time=end_time,
-                        limit=1000  # Binance max limit per request
+                        limit=1000  
                     )
 
                     if not funding_data:
@@ -57,10 +54,6 @@ class BinanceFundingRateFetcher(SchedulerJob):
 
                     total_processed += len(funding_data)
                     print(f"Fetched {len(funding_data)} entries for {binance_symbol}")
-
-                    # Prepare for next page (older data)
-                    oldest_ts = int(funding_data[-1]["fundingTime"])
-                    end_time = oldest_ts - 1
 
                     time.sleep(0.3)
 
