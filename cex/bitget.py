@@ -17,7 +17,7 @@ class BitgetFundingRateFetcher(SchedulerJob):
         }
         self.base_url = "https://api.bitget.com/api/v2/mix/market/history-fund-rate"
         # you can raise this up to 100
-        self.page_size = 100
+        self.page_size = 10
 
     def get_history(self, symbol: str, product_type: str, page_no: int):
         params = {

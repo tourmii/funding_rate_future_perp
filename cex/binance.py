@@ -15,15 +15,21 @@ class BinanceFundingRateFetcher(SchedulerJob):
             "ETHUSDT": "ETH"
         }
         self.base_url = "https://fapi.binance.com/fapi/v1/fundingRate"
-
-    def get_funding_rate_history(self, symbol, limit=1000):
+        
+    def get_funding_rate_history(self, symbol, limit=5):
         params = {
             "symbol": symbol,
             "limit": limit,
         }
         response = requests.get(self.base_url, params=params)
         response.raise_for_status()
-        return response.json()
+        data = response.json()
+        
+        sorted_data = sorted(data, key=lambda x: x["fundingTime"], reverse=True)
+        
+        print(sorted_data)
+        return sorted_data
+
 
     def fetch_data(self):
         for binance_symbol, mapped_symbol in self.product_mapping.items():
@@ -34,7 +40,7 @@ class BinanceFundingRateFetcher(SchedulerJob):
                 try:
                     funding_data = self.get_funding_rate_history(
                         symbol=binance_symbol,
-                        limit=1000  
+                        limit=5  
                     )
 
                     if not funding_data:
