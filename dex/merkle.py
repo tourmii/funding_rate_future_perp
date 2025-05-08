@@ -70,3 +70,11 @@ class MerkleFundingRateFetcher(SchedulerJob):
 
             time.sleep(1)
 
+if __name__ == "__main__":
+    # Example usage
+    mongodb_uri = "mongodb://localhost:27017/"
+    database_name = "funding_rates"
+    collection_name = "funding_rates"
+
+    fetcher = MerkleFundingRateFetcher(mongodb_uri, database_name, collection_name)
+    fetcher.fetch_data()

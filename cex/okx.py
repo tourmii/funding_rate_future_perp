@@ -71,3 +71,4 @@ class OKXFundingRateFetcher(SchedulerJob):
                     break
 
             print(f"Finished processing {inst_id}. Total entries: {total_processed}")
+

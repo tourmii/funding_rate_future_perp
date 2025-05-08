@@ -12,8 +12,8 @@ class BybitFundingRateFetcher(SchedulerJob):
         self.collection = self.database[collection_name]
         self.session = HTTP(testnet=False)
         self.product_mapping = {
-            "BTCPERP": "BTC"
-            # "ETHPERP": "ETH"
+            "BTCPERP": "BTC",
+            "ETHPERP": "ETH"
         }
 
     def fetch_data(self):
