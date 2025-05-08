@@ -53,8 +53,6 @@ class BitgetFundingRateFetcher(SchedulerJob):
                     "timestamp": ts // 1000,
                     "funding_rate": float(entry["fundingRate"])
                 }
-                # upsert to avoid duplicates
-                print(f"Processing record: {rec}")
                 self.collection.update_one(
                     {"_id": rec["_id"]},
                     {"$setOnInsert": rec},
@@ -64,12 +62,3 @@ class BitgetFundingRateFetcher(SchedulerJob):
                 time.sleep(0.2)
 
             print(f"Finished {bitget_symbol}: {total} total entries\n")
-
-if __name__ == "__main__":
-    # Example usage
-    fetcher = BitgetFundingRateFetcher(
-        mongodb_uri="mongodb://localhost:27017/",
-        database_name="crypto_data",
-        collection_name="funding_rates"
-    )
-    fetcher.fetch_data()
