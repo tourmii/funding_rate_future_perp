@@ -17,7 +17,7 @@ class BitgetFundingRateFetcher(SchedulerJob):
         }
         self.base_url = "https://api.bitget.com/api/v2/mix/market/history-fund-rate"
         # you can raise this up to 100
-        self.page_size = 10
+        self.page_size = 100
 
     def get_history(self, symbol: str, product_type: str, page_no: int):
         params = {
@@ -33,47 +33,43 @@ class BitgetFundingRateFetcher(SchedulerJob):
     def fetch_data(self):
         for bitget_symbol, mapped_symbol in self.product_mapping.items():
             print(f"Fetching Bitget funding rates for {bitget_symbol}")
-            page_no = 1
+            page_no = 0
             total = 0
 
-            while True:
-                payload = self.get_history(
-                    symbol=bitget_symbol,
-                    product_type="USDT-FUTURES",
-                    page_no=page_no
+            payload = self.get_history(
+                symbol=bitget_symbol,
+                product_type="USDT-FUTURES",
+                page_no=page_no
+            )
+
+            data = payload.get("data", [])
+
+            for entry in data:
+                ts = int(entry["fundingTime"])  
+                rec = {
+                    "_id": f"bitget_{mapped_symbol}_{ts}",
+                    "symbol": mapped_symbol,
+                    "exchange": "bitget",
+                    "timestamp": ts // 1000,
+                    "funding_rate": float(entry["fundingRate"])
+                }
+                # upsert to avoid duplicates
+                print(f"Processing record: {rec}")
+                self.collection.update_one(
+                    {"_id": rec["_id"]},
+                    {"$setOnInsert": rec},
+                    upsert=True
                 )
 
-                data = payload.get("data", [])
-                if not data:
-                    print(f"No more data on page {page_no} for {bitget_symbol}")
-                    break
-
-                for entry in data:
-                    ts = int(entry["fundingTime"])  
-                    rec = {
-                        "_id": f"bitget_{mapped_symbol}_{ts}",
-                        "symbol": mapped_symbol,
-                        "exchange": "bitget",
-                        "timestamp": ts // 1000,
-                        "funding_rate": float(entry["fundingRate"])
-                    }
-                    # upsert to avoid duplicates
-                    self.collection.update_one(
-                        {"_id": rec["_id"]},
-                        {"$setOnInsert": rec},
-                        upsert=True
-                    )
-
-                batch = len(data)
-                total += batch
-                print(f"Page {page_no}: fetched {batch} entries for {bitget_symbol}")
-
-                # if fewer than page_size returned, this was the last page
-                if batch < self.page_size:
-                    break
-
-                page_no += 1
                 time.sleep(0.2)
 
             print(f"Finished {bitget_symbol}: {total} total entries\n")
 
+if __name__ == "__main__":
+    # Example usage
+    fetcher = BitgetFundingRateFetcher(
+        mongodb_uri="mongodb://localhost:27017/",
+        database_name="crypto_data",
+        collection_name="funding_rates"
+    )
+    fetcher.fetch_data()
