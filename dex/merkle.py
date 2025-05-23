@@ -15,6 +15,7 @@ class MerkleFundingRateFetcher(SchedulerJob):
         self.product_mapping = {
             'BTC_USD': 'BTC',
             'ETH_USD': 'ETH',
+            'APT_USD': 'APT',
         }
         self.base_url = "https://node.prod.merkle.trade/v1/accounts"
         self.account = "0x5ae6789dd2fec1a9ec9cccfb3acaf12e93d432f0a3a42c92fe1a9d490b7bbc06"
@@ -30,6 +31,7 @@ class MerkleFundingRateFetcher(SchedulerJob):
         )
         encoded = urllib.parse.quote(struct, safe='')
         url = f"{self.base_url}/{self.account}/resource/{encoded}"
+        print(url)
         resp = requests.get(url, headers={"Accept": "application/json"})
         resp.raise_for_status()
         return resp.json().get("data", {})
@@ -71,7 +73,6 @@ class MerkleFundingRateFetcher(SchedulerJob):
             time.sleep(1)
 
 if __name__ == "__main__":
-    # Example usage
     mongodb_uri = "mongodb://localhost:27017/"
     database_name = "funding_rates"
     collection_name = "funding_rates"
